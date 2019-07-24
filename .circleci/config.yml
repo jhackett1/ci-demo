@@ -11,11 +11,15 @@ jobs: # a collection of steps
           PGHOST: 127.0.0.1
           PGUSER: circleci-demo-ruby
           RAILS_ENV: test
+
+
       - image: circleci/postgres:9.5-alpine # database image
         environment: # environment variables for database
           POSTGRES_USER: circleci-demo-ruby
           POSTGRES_DB: rails_blog
           POSTGRES_PASSWORD: ""
+
+
     steps:
       - checkout
 
@@ -38,7 +42,12 @@ jobs: # a collection of steps
       - run:
           name: Run rspec in parallel
           command: |
-            bin/rails test 
+            bundle exec bin/rails test --profile 10 \
+                              # --format RspecJunitFormatter \
+                              --out test_results/rspec.xml \
+                              --format progress \
+                              $(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
+
 
       - store_test_results:
           path: test_results
